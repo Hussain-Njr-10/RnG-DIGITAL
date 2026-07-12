@@ -319,6 +319,22 @@ while (i < projects.length) {
       this.el.addEventListener('intersect', this.onIntersect.bind(this), {
         passive: true,
       })
+
+      const skipBtn = this.el.querySelector('.skip-work-btn')
+      if (skipBtn) {
+        skipBtn.addEventListener('click', (e) => {
+          e.preventDefault()
+          if (window.lenis) {
+            window.lenis.scrollTo('#my-way', {
+              duration: 1.5,
+              easing: (t) =>
+                t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t,
+            })
+          } else {
+            document.querySelector('#my-way').scrollIntoView({ behavior: 'smooth' })
+          }
+        })
+      }
     }
 
     /**
