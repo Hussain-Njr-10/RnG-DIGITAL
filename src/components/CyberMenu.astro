@@ -1,0 +1,458 @@
+---
+const menu = [
+  { id: 'about', text: 'About' },
+  { id: 'work', text: 'Work' },
+  { id: 'contact', text: 'Contact' },
+]
+---
+
+<div class="cyber-menu-wrapper js-cyber-wrapper">
+  <button class="cyber-toggle js-cyber-toggle cursor-target" aria-label="Toggle Menu">
+    <span class="cyber-toggle__text">Menu</span>
+  </button>
+  
+  <div class="cyber-menu js-cyber-menu">
+    <div class="cyber-menu__inner">
+      <button class="cyber-close js-cyber-close cursor-target" aria-label="Close Menu">
+        <span class="u-sr-only">Close Menu</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <nav class="cyber-nav">
+        <div class="cyber-nav__title">Discover</div>
+        <ul class="cyber-nav__list">
+          {menu.map((item, index) => (
+            <li class="cyber-nav__item">
+              <a href={`#${item.id}`} class="cyber-nav__link js-cyber-link cursor-target" data-text={item.text}>
+                <div class="cyber-nav__bg"></div>
+                <span class="cyber-nav__text" data-text={item.text}>
+                  {item.text.split('').map(char => (
+                    <span class="char">{char}</span>
+                  ))}
+                </span>
+              </a>
+              <span class="cyber-nav__num">00{index + 1}</span>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      <div class="cyber-footer">
+        <div class="cyber-footer__item">
+          <div class="cyber-footer__title">Connect</div>
+          <div class="cyber-footer__content js-cyber-footer-content">
+            <span class="char-wrap">
+              {'LinkedIn'.split('').map(c => <span class="char">{c}</span>)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { gsap } from 'gsap'
+  import Emitter from '../utils/Emitter'
+
+  class CyberMenu {
+    wrapper: HTMLElement
+    toggleBtn: HTMLElement
+    closeBtn: HTMLElement
+    menuElement: HTMLElement
+    links: NodeListOf<HTMLElement>
+    footerContents: NodeListOf<HTMLElement>
+    isOpen: boolean = false
+    
+    constructor() {
+      this.wrapper = document.querySelector('.js-cyber-wrapper')
+      if (!this.wrapper) return
+      
+      this.toggleBtn = this.wrapper.querySelector('.js-cyber-toggle')
+      this.closeBtn = this.wrapper.querySelector('.js-cyber-close')
+      this.menuElement = this.wrapper.querySelector('.js-cyber-menu')
+      this.links = this.wrapper.querySelectorAll('.js-cyber-link')
+      this.footerContents = this.wrapper.querySelectorAll('.js-cyber-footer-content')
+      
+      this.bindEvents()
+    }
+    
+    bindEvents() {
+      this.toggleBtn.addEventListener('click', this.openMenu.bind(this))
+      this.closeBtn.addEventListener('click', this.closeMenu.bind(this))
+      
+      this.links.forEach(link => {
+        link.addEventListener('click', (e) => this.moveToSection(e))
+        link.addEventListener('mouseenter', this.shuffleText.bind(this))
+      })
+
+      this.footerContents.forEach(content => {
+        content.addEventListener('mouseenter', this.shuffleText.bind(this))
+      })
+      
+      Emitter.on('scroll', this.onScroll, this)
+    }
+    
+    onScroll(scrollY: number) {
+      if (scrollY > 150) {
+        this.wrapper.classList.add('is-visible')
+      } else {
+        this.wrapper.classList.remove('is-visible')
+        if (this.isOpen) this.closeMenu()
+      }
+    }
+    
+    openMenu() {
+      this.isOpen = true
+      this.wrapper.classList.add('is-open')
+      
+      gsap.to(this.menuElement, {
+        x: '0%',
+        duration: 0.8,
+        ease: 'expo.inOut'
+      })
+
+      const listItems = this.wrapper.querySelectorAll('.cyber-nav__item')
+      gsap.fromTo(listItems, 
+        { x: -50, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 0.6, stagger: 0.1, delay: 0.3, ease: 'expo.out' }
+      )
+    }
+    
+    closeMenu() {
+      this.isOpen = false
+      this.wrapper.classList.remove('is-open')
+      
+      gsap.to(this.menuElement, {
+        x: '-100%',
+        duration: 0.8,
+        ease: 'expo.inOut'
+      })
+    }
+    
+    moveToSection(e: Event) {
+      e.preventDefault()
+      this.closeMenu()
+      
+      const id = (e.currentTarget as HTMLElement).getAttribute('href')
+      window.lenis.scrollTo(id, {
+        duration: 1.5,
+        easing: (t: number) => t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t,
+      })
+    }
+    
+    shuffleText(e: Event) {
+      const target = e.currentTarget as HTMLElement
+      const chars = target.querySelectorAll('.char')
+      
+      chars.forEach((char, index) => {
+        const originalChar = char.getAttribute('data-orig') || char.textContent
+        if (!char.hasAttribute('data-orig')) {
+          char.setAttribute('data-orig', originalChar)
+        }
+        if (originalChar === ' ') return
+        
+        const shuffleInterval = 20
+        const resetDelay = 100
+        const additionalDelay = 30
+        
+        setTimeout(() => {
+          const interval = setInterval(() => {
+            char.textContent = String.fromCharCode(97 + Math.floor(Math.random() * 26))
+          }, shuffleInterval)
+          
+          setTimeout(() => {
+            clearInterval(interval)
+            char.textContent = originalChar
+          }, resetDelay + (index * additionalDelay))
+        }, index * 20)
+      })
+    }
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => new CyberMenu(), { once: true })
+  } else {
+    new CyberMenu()
+  }
+</script>
+
+<style lang="scss">
+  .cyber-menu-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    pointer-events: none;
+    
+    &.is-visible {
+      .cyber-toggle {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+    }
+    
+    &.is-open {
+      pointer-events: auto;
+      
+      .cyber-toggle {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+  }
+
+  .cyber-toggle {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: color(primary);
+    color: color(secondary);
+    border: 1px solid color(secondary);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.4s ease, transform 0.4s ease, background 0.3s ease, color 0.3s ease;
+    font: 400 14px / 1 font-family(fraktion);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    
+    &:hover {
+      background: color(secondary);
+      color: color(primary);
+      box-shadow: none;
+    }
+  }
+  
+  .cyber-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 45%;
+    height: 100%;
+    background: color(primary);
+    color: color(secondary);
+    transform: translateX(-100%);
+    border-right: 1px solid color(secondary);
+    
+    @include mq(tablet) {
+      width: 100%;
+    }
+    
+    &__inner {
+      padding: 4rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+
+      @include mq(phone) {
+        padding: 2rem;
+      }
+    }
+  }
+  
+  .cyber-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: color(secondary);
+    transition: transform 0.3s ease;
+    
+    &:hover {
+      transform: rotate(90deg);
+    }
+  }
+
+  .cyber-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &__title {
+      font: 400 12px / 1 font-family(fraktion);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      opacity: 0.7;
+    }
+    
+    &__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    &__item {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    &__num {
+      position: absolute;
+      left: calc(100% + 1rem);
+      font: 400 12px / 1 font-family(fraktion);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
+
+      @include mq(phone) {
+        display: none;
+      }
+    }
+    
+    &__link {
+      position: relative;
+      display: inline-block;
+      text-decoration: none;
+      color: color(secondary);
+      font: 400 64px / 1 font-family(fraktion);
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      padding: 0.5rem 1rem;
+      margin-left: -1rem;
+      
+      @include mq(phone) {
+        font-size: 40px;
+      }
+      
+      .cyber-nav__bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: color(secondary);
+        clip-path: polygon(0 0, 100% 0, 100% 80%, 95% 100%, 0 100%, 0% 50%);
+        z-index: 0;
+        opacity: 0;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      
+      .cyber-nav__text {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        
+        .char {
+          display: inline-block;
+          transition: color 0.2s ease;
+        }
+      }
+      
+      &:hover {
+        .cyber-nav__bg {
+          opacity: 1;
+          transform: scaleX(1);
+        }
+        
+        .char {
+          color: color(primary);
+        }
+      }
+    }
+
+    &__item:hover &__num {
+      opacity: 1;
+    }
+  }
+
+  .cyber-footer {
+    margin-top: auto;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 2rem;
+    display: flex;
+    flex-direction: column;
+
+    &__item {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    &__title {
+      font: 400 12px / 1 font-family(fraktion);
+      text-transform: uppercase;
+      opacity: 0.7;
+      min-width: 80px;
+    }
+
+    &__content {
+      font: 400 14px / 1 font-family(fraktion);
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      display: inline-block;
+      
+      .char-wrap {
+        display: flex;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .char {
+        transition: color 0.3s ease;
+      }
+
+      &:after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: color(secondary);
+        z-index: 0;
+      }
+
+      &:hover {
+        .char {
+          color: color(primary);
+        }
+        &:after {
+          animation: hoverEffect 1s ease forwards;
+        }
+      }
+    }
+  }
+
+  @keyframes hoverEffect {
+    0%,
+    100% {
+      width: 0%;
+      left: 0;
+    }
+    50% {
+      width: 100%;
+      left: 0;
+    }
+    51% {
+      left: auto;
+      right: 0;
+      width: 100%;
+    }
+    100% {
+      left: auto;
+      right: 0;
+      width: 0%;
+    }
+  }
+</style>

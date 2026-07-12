@@ -8,6 +8,8 @@ import SWork from '../components/SWork.astro'
 import SMyWay from '../components/SMyWay.astro'
 import SCTA from '../components/SCTA.astro'
 import ASeparator from '../components/ASeparator.astro'
+import CyberMenu from '../components/CyberMenu.astro'
+import TargetCursor from '../components/react/TargetCursor.jsx'
 
 import '../styles/global.scss'
 ---
@@ -97,6 +99,7 @@ import '../styles/global.scss'
 
   <body>
     <div class="site-wrapper js-site-wrapper" style="opacity: 0;">
+      <TargetCursor client:load targetSelector=".cursor-target" cursorColor="var(--color-secondary)" cursorColorOnTarget="var(--color-primary)" />
       <SiteHead />
 
       <SHero />
@@ -115,6 +118,8 @@ import '../styles/global.scss'
 
       <SiteFoot />
     </div><!-- .site-wrapper -->
+
+    <CyberMenu />
 
     <div
       class="site-intro js-intro"
