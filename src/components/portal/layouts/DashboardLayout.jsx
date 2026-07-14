@@ -30,8 +30,9 @@ export default function DashboardLayout() {
           )}
           {role === 'client' && (
             <>
-              <Link to="/client" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Dashboard</Link>
-              <Link to="/client/reports" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase', opacity: 0.7 }}>Reports</Link>
+              <Link to="/client" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>My Projects</Link>
+              <Link to="/client/invoices" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Invoices</Link>
+              <Link to="/client/settings" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase', opacity: 0.7 }}>Settings</Link>
             </>
           )}
           {role === 'staff' && (

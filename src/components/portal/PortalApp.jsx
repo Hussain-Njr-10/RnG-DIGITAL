@@ -11,7 +11,9 @@ import ClientsList from './pages/admin/ClientsList'
 import ProjectsKanban from './pages/admin/ProjectsKanban'
 import ProjectDetail from './pages/admin/ProjectDetail'
 import StaffList from './pages/admin/StaffList'
-import ClientDashboard from './pages/ClientDashboard'
+import ClientProjects from './pages/client/ClientProjects'
+import ClientProjectDetail from './pages/client/ClientProjectDetail'
+import ClientInvoices from './pages/client/ClientInvoices'
 import StaffDashboard from './pages/StaffDashboard'
 
 export default function PortalApp() {
@@ -65,14 +67,32 @@ export default function PortalApp() {
                 } 
               />
             </Route>
-            <Route 
-              path="/client" 
-              element={
-                <ProtectedRoute allowedRoles={['client']}>
-                  <ClientDashboard />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/client">
+              <Route 
+                index 
+                element={
+                  <ProtectedRoute allowedRoles={['client']}>
+                    <ClientProjects />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="projects/:id" 
+                element={
+                  <ProtectedRoute allowedRoles={['client']}>
+                    <ClientProjectDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="invoices" 
+                element={
+                  <ProtectedRoute allowedRoles={['client']}>
+                    <ClientInvoices />
+                  </ProtectedRoute>
+                } 
+              />
+            </Route>
             <Route 
               path="/staff" 
               element={
