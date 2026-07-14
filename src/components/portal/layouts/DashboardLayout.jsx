@@ -37,8 +37,8 @@ export default function DashboardLayout() {
           )}
           {role === 'staff' && (
             <>
-              <Link to="/staff" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Dashboard</Link>
-              <Link to="/staff/tasks" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase', opacity: 0.7 }}>My Tasks</Link>
+              <Link to="/staff" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>My Tasks</Link>
+              <Link to="/staff/settings" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase', opacity: 0.7 }}>Settings</Link>
             </>
           )}
         </nav>

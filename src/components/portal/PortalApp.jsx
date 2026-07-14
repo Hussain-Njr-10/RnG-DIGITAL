@@ -14,7 +14,8 @@ import StaffList from './pages/admin/StaffList'
 import ClientProjects from './pages/client/ClientProjects'
 import ClientProjectDetail from './pages/client/ClientProjectDetail'
 import ClientInvoices from './pages/client/ClientInvoices'
-import StaffDashboard from './pages/StaffDashboard'
+import StaffTasks from './pages/staff/StaffTasks'
+import StaffTaskDetail from './pages/staff/StaffTaskDetail'
 
 export default function PortalApp() {
   return (
@@ -93,14 +94,24 @@ export default function PortalApp() {
                 } 
               />
             </Route>
-            <Route 
-              path="/staff" 
-              element={
-                <ProtectedRoute allowedRoles={['staff']}>
-                  <StaffDashboard />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/staff">
+              <Route 
+                index 
+                element={
+                  <ProtectedRoute allowedRoles={['staff']}>
+                    <StaffTasks />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="tasks/:id" 
+                element={
+                  <ProtectedRoute allowedRoles={['staff']}>
+                    <StaffTaskDetail />
+                  </ProtectedRoute>
+                } 
+              />
+            </Route>
           </Route>
           
           <Route path="*" element={<Navigate to="/login" replace />} />
