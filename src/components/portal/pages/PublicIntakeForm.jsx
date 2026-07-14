@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Link } from 'react-router-dom'
+import { notifyAllAdmins } from '@/lib/notifications'
 
 export default function PublicIntakeForm() {
   const [formData, setFormData] = useState({
@@ -27,6 +28,7 @@ export default function PublicIntakeForm() {
     if (insertError) {
       setError(insertError.message)
     } else {
+      await notifyAllAdmins(`New project inquiry from ${formData.name}`, `/admin/clients`)
       setSuccess(true)
     }
     setLoading(false)

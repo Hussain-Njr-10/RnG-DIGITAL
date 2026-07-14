@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { notifyUser } from '@/lib/notifications'
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -12,6 +13,8 @@ export default function ProjectDetail() {
 
   const [newMessage, setNewMessage] = useState('')
   const [newTask, setNewTask] = useState('')
+  const [assignedStaff, setAssignedStaff] = useState('')
+  const [staffList, setStaffList] = useState([])
 
   useEffect(() => {
     fetchProjectData()
@@ -40,8 +43,13 @@ export default function ProjectDetail() {
     setLoading(true)
     const { data } = await supabase.from('projects').select('*').eq('id', id).single()
     if (data) setProject(data)
-    await Promise.all([fetchTasks(), fetchMessages(), fetchFiles()])
+    await Promise.all([fetchTasks(), fetchMessages(), fetchFiles(), fetchStaff()])
     setLoading(false)
+  }
+
+  async function fetchStaff() {
+    const { data } = await supabase.from('profiles').select('*').eq('role', 'staff')
+    if (data) setStaffList(data)
   }
 
   async function fetchTasks() {
@@ -73,8 +81,14 @@ export default function ProjectDetail() {
     e.preventDefault()
     if (!newTask.trim()) return
     
-    await supabase.from('tasks').insert([{ project_id: id, title: newTask, status: 'pending' }])
+    const { data } = await supabase.from('tasks').insert([{ project_id: id, title: newTask, status: 'pending', assigned_staff: assignedStaff || null }]).select().single()
+    
+    if (data && assignedStaff) {
+      await notifyUser(assignedStaff, `You have been assigned a new task: '${data.title}'`, `/staff/tasks/${data.id}`)
+    }
+    
     setNewTask('')
+    setAssignedStaff('')
   }
 
   if (loading) return <div style={{ opacity: 0.7 }}>Loading project...</div>
@@ -100,6 +114,10 @@ export default function ProjectDetail() {
             
             <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
               <input type="text" value={newTask} onChange={e => setNewTask(e.target.value)} placeholder="New task..." style={{ flex: 1, padding: '0.75rem', background: 'transparent', border: '1px solid var(--color-secondary)', color: 'var(--color-secondary)', outline: 'none', fontFamily: 'inherit' }} />
+              <select value={assignedStaff} onChange={e => setAssignedStaff(e.target.value)} style={{ padding: '0.75rem', background: 'var(--color-primary)', border: '1px solid var(--color-secondary)', color: 'var(--color-secondary)', outline: 'none', fontFamily: 'inherit' }}>
+                <option value="">Unassigned</option>
+                {staffList.map(s => <option key={s.id} value={s.id}>{s.email}</option>)}
+              </select>
               <button type="submit" style={{ padding: '0.75rem 1.5rem', background: 'var(--color-secondary)', color: 'var(--color-primary)', border: 'none', cursor: 'pointer', textTransform: 'uppercase', fontWeight: 'bold', fontFamily: 'inherit' }}>Add</button>
             </form>
 

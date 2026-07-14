@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { notifyAllAdmins, notifyProjectStaff } from '@/lib/notifications'
 
 export default function ClientProjectDetail() {
   const { id } = useParams()
@@ -68,12 +69,22 @@ export default function ClientProjectDetail() {
     const fileName = prompt("Enter a name for the mock file upload:")
     if (fileName) {
       await supabase.from('files').insert([{ project_id: id, name: fileName, url: '#' }])
+      
+      const msg = `Client uploaded file '${fileName}' for project '${project.title}'`
+      await notifyAllAdmins(msg, `/admin/projects/${id}`)
+      await notifyProjectStaff(id, msg, `/staff`)
+
       alert("Mock file uploaded successfully!")
     }
   }
   
   const handleApprove = async (status) => {
     await supabase.from('projects').update({ status }).eq('id', id)
+    setProject(prev => ({...prev, status}))
+    
+    const msg = `Client updated project '${project.title}' status to ${status}`
+    await notifyAllAdmins(msg, `/admin/projects/${id}`)
+    await notifyProjectStaff(id, msg, `/staff`)
   }
 
   if (loading) return <div style={{ opacity: 0.7 }}>Loading project...</div>

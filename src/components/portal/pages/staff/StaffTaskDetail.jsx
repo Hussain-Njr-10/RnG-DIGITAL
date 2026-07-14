@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { notifyUser, notifyAllAdmins } from '@/lib/notifications'
 
 export default function StaffTaskDetail() {
   const { id } = useParams()
@@ -78,6 +79,12 @@ export default function StaffTaskDetail() {
   const handleStatusChange = async (newStatus) => {
     await supabase.from('tasks').update({ status: newStatus }).eq('id', id)
     setTask(prev => ({...prev, status: newStatus}))
+
+    const link = `/admin/projects/${task.project_id}`
+    await notifyAllAdmins(`Task '${task.title}' updated to ${newStatus}`, link)
+    if (task.projects?.client_id) {
+      await notifyUser(task.projects.client_id, `Task '${task.title}' updated to ${newStatus}`, `/client/projects/${task.project_id}`)
+    }
   }
 
   if (loading) return <div style={{ opacity: 0.7 }}>Loading task details...</div>
