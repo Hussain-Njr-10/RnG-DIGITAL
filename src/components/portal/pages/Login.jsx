@@ -9,7 +9,7 @@ export default function Login() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { user, role } = useAuth()
+  const { user, role, loading: authLoading } = useAuth()
 
   // If already logged in, redirect based on role
   React.useEffect(() => {
@@ -17,8 +17,13 @@ export default function Login() {
       if (role === 'admin') navigate('/admin')
       else if (role === 'client') navigate('/client')
       else if (role === 'staff') navigate('/staff')
+    } else if (user && role === null && !authLoading && loading) {
+      setError("No role found. Please ensure your profile is created and you have the correct role assigned.")
+      setLoading(false)
+      // Optionally sign out the user if they have no role
+      supabase.auth.signOut()
     }
-  }, [user, role, navigate])
+  }, [user, role, authLoading, navigate, loading])
 
   const handleLogin = async (e) => {
     e.preventDefault()

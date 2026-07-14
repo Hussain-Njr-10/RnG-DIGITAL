@@ -22,6 +22,9 @@ export default function DashboardLayout() {
           {role === 'admin' && (
             <>
               <Link to="/admin" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Dashboard</Link>
+              <Link to="/admin/clients" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Clients</Link>
+              <Link to="/admin/projects" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Projects</Link>
+              <Link to="/admin/staff" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase' }}>Staff</Link>
               <Link to="/admin/settings" style={{ color: 'var(--color-secondary)', textDecoration: 'none', textTransform: 'uppercase', opacity: 0.7 }}>Settings</Link>
             </>
           )}
