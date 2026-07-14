@@ -3,12 +3,14 @@ import { supabase } from '@/lib/supabase'
 
 export default function ClientsList() {
   const [clients, setClients] = useState([])
+  const [inquiries, setInquiries] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [newClient, setNewClient] = useState({ name: '', email: '', company: '' })
+  const [newClient, setNewClient] = useState({ name: '', email: '', company: '', inquiry_id: null })
 
   useEffect(() => {
     fetchClients()
+    fetchInquiries()
   }, [])
 
   async function fetchClients() {
@@ -24,21 +26,49 @@ export default function ClientsList() {
     setLoading(false)
   }
 
+  async function fetchInquiries() {
+    const { data, error } = await supabase
+      .from('inquiries')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (!error && data) {
+      setInquiries(data)
+    }
+  }
+
   // Placeholder function
   const sendInviteEmail = async (email, inviteId) => {
-    console.log(`Sending invite email to ${email} for invite ${inviteId}`)
+    console.log(`Sending invite email to ${email}. Link: /portal/join/${inviteId}`)
     // This will be wired up later
   }
 
   const handleAddClient = async (e) => {
     e.preventDefault()
     
+    let projectId = null
+
+    if (newClient.inquiry_id) {
+      const inquiry = inquiries.find(i => i.id === newClient.inquiry_id)
+      if (inquiry) {
+         const { data: projData, error: projErr } = await supabase.from('projects').insert([{
+           title: `${inquiry.company || inquiry.name} - ${inquiry.project_type}`,
+           status: 'pending',
+           description: inquiry.requirements
+           // client_id is null until they join
+         }]).select().single()
+         
+         if (projData) projectId = projData.id
+      }
+    }
+
     // Create an invite record
     const { data, error } = await supabase
       .from('invites')
       .insert([{ 
         email: newClient.email, 
-        role: 'client'
+        role: 'client',
+        project_id: projectId
       }])
       .select()
       .single()
@@ -51,9 +81,15 @@ export default function ClientsList() {
 
     if (data) {
       await sendInviteEmail(newClient.email, data.id)
-      alert("Invite sent successfully!")
+      
+      if (newClient.inquiry_id) {
+         await supabase.from('inquiries').delete().eq('id', newClient.inquiry_id)
+         fetchInquiries()
+      }
+
+      alert(`Invite link generated: /portal/join/${data.id}\n\n(In production, this would be emailed)`)
       setShowModal(false)
-      setNewClient({ name: '', email: '', company: '' })
+      setNewClient({ name: '', email: '', company: '', inquiry_id: null })
     }
   }
 
@@ -62,12 +98,49 @@ export default function ClientsList() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Clients</h1>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={() => { setNewClient({ name: '', email: '', company: '', inquiry_id: null }); setShowModal(true) }}
           style={{ padding: '0.75rem 1.5rem', background: 'var(--color-secondary)', color: 'var(--color-primary)', border: 'none', cursor: 'pointer', textTransform: 'uppercase', fontWeight: 'bold', fontFamily: 'inherit' }}
         >
           Add Client
         </button>
       </div>
+
+      {inquiries.length > 0 && (
+        <div style={{ marginBottom: '3rem' }}>
+          <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', marginBottom: '1rem', color: 'orange' }}>Pending Inquiries</h2>
+          <div style={{ border: '1px solid orange', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid orange' }}>
+                  <th style={{ padding: '1rem', textTransform: 'uppercase' }}>Name</th>
+                  <th style={{ padding: '1rem', textTransform: 'uppercase' }}>Email</th>
+                  <th style={{ padding: '1rem', textTransform: 'uppercase' }}>Project Type</th>
+                  <th style={{ padding: '1rem', textTransform: 'uppercase' }}>Budget</th>
+                  <th style={{ padding: '1rem', textTransform: 'uppercase' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inquiries.map(inq => (
+                  <tr key={inq.id} style={{ borderBottom: '1px solid orange' }}>
+                    <td style={{ padding: '1rem' }}>{inq.name} {inq.company && `(${inq.company})`}</td>
+                    <td style={{ padding: '1rem' }}>{inq.email}</td>
+                    <td style={{ padding: '1rem', textTransform: 'uppercase' }}>{inq.project_type}</td>
+                    <td style={{ padding: '1rem' }}>{inq.budget_range}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <button 
+                        onClick={() => { setNewClient({ name: inq.name, email: inq.email, company: inq.company || '', inquiry_id: inq.id }); setShowModal(true) }}
+                        style={{ padding: '0.5rem 1rem', background: 'orange', color: 'var(--color-primary)', border: 'none', cursor: 'pointer', textTransform: 'uppercase', fontWeight: 'bold', fontSize: '0.8rem' }}
+                      >
+                        Approve & Invite
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div style={{ border: '1px solid var(--color-secondary)', overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '500px' }}>

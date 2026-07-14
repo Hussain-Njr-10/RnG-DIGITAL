@@ -16,6 +16,8 @@ import ClientProjectDetail from './pages/client/ClientProjectDetail'
 import ClientInvoices from './pages/client/ClientInvoices'
 import StaffTasks from './pages/staff/StaffTasks'
 import StaffTaskDetail from './pages/staff/StaffTaskDetail'
+import PublicIntakeForm from './pages/PublicIntakeForm'
+import JoinLink from './pages/JoinLink'
 
 export default function PortalApp() {
   return (
@@ -24,6 +26,8 @@ export default function PortalApp() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/onboard" element={<PublicIntakeForm />} />
+          <Route path="/join/:token" element={<JoinLink />} />
           
           <Route element={<DashboardLayout />}>
             <Route path="/admin">
