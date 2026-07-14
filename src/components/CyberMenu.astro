@@ -3,6 +3,7 @@ const menu = [
   { id: 'about', text: 'About' },
   { id: 'work', text: 'Work' },
   { id: 'contact', text: 'Contact' },
+  { id: '/portal/login', text: 'Login' },
 ]
 ---
 
@@ -26,7 +27,7 @@ const menu = [
         <ul class="cyber-nav__list">
           {menu.map((item, index) => (
             <li class="cyber-nav__item">
-              <a href={`#${item.id}`} class="cyber-nav__link js-cyber-link cursor-target" data-text={item.text}>
+              <a href={item.id.startsWith('/') ? item.id : `#${item.id}`} class={item.id.startsWith('/') ? "cyber-nav__link cursor-target" : "cyber-nav__link js-cyber-link cursor-target"} data-text={item.text}>
                 <div class="cyber-nav__bg"></div>
                 <span class="cyber-nav__text" data-text={item.text}>
                   {item.text.split('').map(char => (
