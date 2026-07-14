@@ -4,15 +4,7 @@ import '@/styles/global.scss'
 
 export function getStaticPaths() {
   return [
-    { params: { all: undefined } }, // handles /portal/
-    { params: { all: 'login' } },
-    { params: { all: 'set-password' } },
-    { params: { all: 'admin' } },
-    { params: { all: 'admin/settings' } },
-    { params: { all: 'client' } },
-    { params: { all: 'client/reports' } },
-    { params: { all: 'staff' } },
-    { params: { all: 'staff/tasks' } }
+    { params: { all: undefined } } // Pre-render the shell for /portal/, Netlify redirects handle the rest
   ];
 }
 ---
